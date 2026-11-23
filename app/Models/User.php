@@ -17,6 +17,18 @@ class User extends Authenticatable
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
 
+    /** The three roles of Mise (see CLAUDE.md). */
+    public const ROLES = ['owner', 'chef', 'storekeeper'];
+
+    /**
+     * True if this user has one of the given roles.
+     * Example: $user->hasRole('owner', 'chef')
+     */
+    public function hasRole(string ...$roles): bool
+    {
+        return in_array($this->role, $roles, true);
+    }
+
     /**
      * Get the attributes that should be cast.
      *
