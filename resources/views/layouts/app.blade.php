@@ -27,6 +27,9 @@
                 </header>
             @endisset
 
+            <!-- Success / error messages (components/flash.blade.php) -->
+            <x-flash />
+
             <!-- Page Content -->
             <main>
                 {{ $slot }}
