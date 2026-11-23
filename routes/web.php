@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\IngredientController;
+use App\Http\Controllers\IngredientUnitController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\StorageAreaController;
 use Illuminate\Support\Facades\Route;
@@ -35,6 +36,10 @@ Route::middleware('auth')->group(function () {
     Route::resource('storage-areas', StorageAreaController::class)
         ->only(['index', 'store', 'destroy']);
     Route::resource('ingredients', IngredientController::class)->except(['show']);
+    Route::post('ingredients/{ingredient}/units', [IngredientUnitController::class, 'store'])
+        ->name('ingredients.units.store');
+    Route::delete('ingredient-units/{unit}', [IngredientUnitController::class, 'destroy'])
+        ->name('ingredient-units.destroy');
 
     // ===== Member 3: suppliers and prices (MISE-7..9) =====
     // Wrap in: Route::middleware('role:owner,storekeeper')->group(function () { ... });

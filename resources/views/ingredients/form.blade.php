@@ -59,6 +59,47 @@
                     </div>
                 </form>
             </div>
+
+            {{-- Pack sizes: only once the ingredient exists (it needs an id) --}}
+            @if ($ingredient->exists)
+                <div class="bg-white shadow-sm sm:rounded-lg p-6 space-y-4">
+                    <div>
+                        <h3 class="font-semibold text-gray-800">Pack sizes</h3>
+                        <p class="text-sm text-gray-500">How this ingredient is bought, e.g. 1 case = 5000 {{ $ingredient->base_unit }}.</p>
+                    </div>
+
+                    @forelse ($ingredient->units()->orderBy('name')->get() as $unit)
+                        <div class="flex items-center justify-between border-b pb-2">
+                            <span>1 <strong>{{ $unit->name }}</strong> = {{ (float) $unit->qty_in_base_unit }} {{ $ingredient->base_unit }}</span>
+                            <form method="POST" action="{{ route('ingredient-units.destroy', $unit) }}"
+                                  onsubmit="return confirm('Delete pack size {{ $unit->name }}?')">
+                                @csrf
+                                @method('DELETE')
+                                <button class="text-sm text-red-600 hover:underline">Delete</button>
+                            </form>
+                        </div>
+                    @empty
+                        <p class="text-sm text-gray-500">No pack sizes yet.</p>
+                    @endforelse
+
+                    <form method="POST" action="{{ route('ingredients.units.store', $ingredient) }}" class="flex flex-wrap items-end gap-3">
+                        @csrf
+                        <div>
+                            <x-input-label for="pack_name" value="Pack name" />
+                            <x-text-input id="pack_name" name="pack_name" type="text" class="mt-1 w-40"
+                                          :value="old('pack_name')" placeholder="e.g. case" required />
+                        </div>
+                        <div>
+                            <x-input-label for="pack_qty" value="Contains ({{ $ingredient->base_unit }})" />
+                            <x-text-input id="pack_qty" name="pack_qty" type="number" step="0.001" min="0"
+                                          class="mt-1 w-40" :value="old('pack_qty')" required />
+                        </div>
+                        <x-secondary-button type="submit">Add pack size</x-secondary-button>
+                    </form>
+                    <x-input-error :messages="$errors->get('pack_name')" />
+                    <x-input-error :messages="$errors->get('pack_qty')" />
+                </div>
+            @endif
         </div>
     </div>
 </x-app-layout>
