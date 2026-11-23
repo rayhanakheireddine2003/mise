@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Ingredient;
 use App\Models\Supplier;
+use App\Models\User;
 use App\Services\PriceService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -59,5 +60,52 @@ class PriceTest extends TestCase
         $this->addPrice($garlic, 3.00, '2026-11-01');
 
         $this->assertNull((new PriceService)->priceAt($chicken, '2026-11-20'));
+    }
+
+    // ----- MISE-9: the price pages -----
+
+    public function test_storekeeper_records_a_new_price_and_the_old_one_stays(): void
+    {
+        $storekeeper = User::factory()->create(['role' => 'storekeeper']);
+        $chicken = Ingredient::create(['name' => 'Chicken breast', 'base_unit' => 'g']);
+        $this->addPrice($chicken, 5.00, '2026-11-01');
+        $supplier = Supplier::first();
+
+        $this->actingAs($storekeeper)
+            ->post(route('ingredients.prices.store', $chicken), [
+                'supplier_id' => $supplier->id, 'price' => 6, 'unit' => 'kg', 'effective_from' => '2026-11-16',
+            ])
+            ->assertSessionHasNoErrors();
+
+        $this->assertSame(2, $chicken->prices()->count()); // the $5 price is still there
+        $this->assertEquals(0.006, (new PriceService)->priceAt($chicken, '2026-11-20')->price_per_base_unit);
+        $this->actingAs($storekeeper)->get(route('ingredients.prices.index', $chicken))
+            ->assertSee('$5.00 / kg')->assertSee('$6.00 / kg');
+    }
+
+    public function test_chicken_per_ml_shows_an_error_instead_of_saving(): void
+    {
+        $chicken = Ingredient::create(['name' => 'Chicken breast', 'base_unit' => 'g']);
+        $supplier = Supplier::create(['name' => 'Hamra Poultry']);
+
+        $this->actingAs(User::factory()->create(['role' => 'storekeeper']))
+            ->post(route('ingredients.prices.store', $chicken), [
+                'supplier_id' => $supplier->id, 'price' => 6, 'unit' => 'ml', 'effective_from' => '2026-11-16',
+            ])
+            ->assertSessionHasErrors('unit');
+
+        $this->assertSame(0, $chicken->prices()->count());
+    }
+
+    public function test_price_per_pack_is_turned_into_price_per_base_unit(): void
+    {
+        $oil = Ingredient::create(['name' => 'Vegetable oil', 'base_unit' => 'ml']);
+        $oil->units()->create(['name' => 'tin', 'qty_in_base_unit' => 4000]);
+        $supplier = Supplier::create(['name' => 'Central Market']);
+
+        $price = (new PriceService)->record($oil, $supplier->id, 20.00, 'tin', '2026-11-01');
+
+        $this->assertEquals(0.005, $price->price_per_base_unit); // $20 / 4000 ml
+        $this->assertSame('$5.00 / l', $price->perStandardUnitLabel('ml'));
     }
 }

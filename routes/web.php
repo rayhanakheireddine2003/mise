@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\IngredientController;
 use App\Http\Controllers\IngredientUnitController;
+use App\Http\Controllers\PriceController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\StorageAreaController;
 use App\Http\Controllers\SupplierController;
@@ -47,6 +48,11 @@ Route::middleware('auth')->group(function () {
     // ===== Member 3: suppliers and prices (MISE-7..9) =====
     Route::middleware('role:owner,storekeeper')->group(function () {
         Route::resource('suppliers', SupplierController::class)->except(['show']);
+        Route::get('prices', [PriceController::class, 'overview'])->name('prices.overview');
+        Route::get('ingredients/{ingredient}/prices', [PriceController::class, 'index'])
+            ->name('ingredients.prices.index');
+        Route::post('ingredients/{ingredient}/prices', [PriceController::class, 'store'])
+            ->name('ingredients.prices.store');
     });
 
     // ===== Member 4: recipes (MISE-10..12) =====
