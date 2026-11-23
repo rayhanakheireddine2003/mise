@@ -86,7 +86,7 @@
                 </table>
             </div>
 
-            <a href="{{ route('prices.overview') }}" class="text-sm text-gray-600 underline">← All prices</a>
+            <a href="{{ route('prices.overview') }}" class="inline-block mt-2 text-sm text-gray-600 underline">← All prices</a>
         </div>
     </div>
 </x-app-layout>

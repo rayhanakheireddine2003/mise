@@ -112,35 +112,35 @@ Navigation (`layouts/navigation.blade.php`) shows each link only if `auth()->use
 | 4 | Sprint 3 | Sales entry, variance report, automated tests on business rules, test with 1–2 real users. Feature freeze at the end of the week |
 | 5 | Polish | Bug fixes, usability, realistic demo data, README, decision notes, rehearse the demo, retrospective |
 
-## Sprint 1: tickets and owners (3 hours per member)
+## Sprint 1: tickets and owners (3 hours per member) — ✅ completed 2026-11-23
 
 | Ticket | Title | Owner | Status |
 | --- | --- | --- | --- |
-| MISE-1 | Project setup (Breeze, CI), all migrations and models, route blocks | Member 4 | |
-| MISE-2 | Role middleware + `role` alias + UnitConverter (merged first = Gate B) | Member 1 | |
-| MISE-3 | RoleMiddlewareTest (3) + UnitConverterTest (8) + role-based menu | Member 1 | |
-| MISE-4 | Storage areas page | Member 2 | |
-| MISE-5 | Ingredients list / add / edit / delete, search and area filter | Member 2 | |
-| MISE-6 | Pack sizes + IngredientTest (6) | Member 2 | |
-| MISE-7 | Suppliers list / add / edit / delete (refuse delete if it has prices) | Member 3 | |
-| MISE-8 | PriceService + priceAt test | Member 3 | |
-| MISE-9 | Price overview, history and new-price form + 3 more PriceTest tests | Member 3 | |
-| MISE-10 | RecipeLine rule + RecipeLineTest (5) | Member 4 | |
-| MISE-11 | Demo data seeder (needs UnitConverter) | Member 4 | |
+| MISE-1 | Project setup (Breeze, CI), all migrations and models, route blocks | Member 4 | ✅ Done |
+| MISE-2 | Role middleware + `role` alias + UnitConverter (merged first = Gate B) | Member 1 | ✅ Done |
+| MISE-3 | RoleMiddlewareTest (3) + UnitConverterTest (8) + role-based menu | Member 1 | ✅ Done |
+| MISE-4 | Storage areas page | Member 2 | ✅ Done |
+| MISE-5 | Ingredients list / add / edit / delete, search and area filter | Member 2 | ✅ Done |
+| MISE-6 | Pack sizes + IngredientTest (6) | Member 2 | ✅ Done |
+| MISE-7 | Suppliers list / add / edit / delete (refuse delete if it has prices) | Member 3 | ✅ Done |
+| MISE-8 | PriceService + priceAt test | Member 3 | ✅ Done |
+| MISE-9 | Price overview, history and new-price form + 3 more PriceTest tests | Member 3 | ✅ Done |
+| MISE-10 | RecipeLine rule + RecipeLineTest (5) | Member 4 | ✅ Done |
+| MISE-11 | Demo data seeder (needs UnitConverter) | Member 4 | ✅ Done |
 | MISE-12 | Recipes list, read-only | **Moved to Sprint 2** | |
 
 **Gates**
 - **Gate A:** Member 4 pushes the project and all tables and models straight to `main`. Nobody else can clone before this.
 - **Gate B:** Member 1 merges the role middleware and UnitConverter. MISE-9 and MISE-11 wait for it.
 
-**Sprint 1 is done when:**
-- [ ] All tickets are merged into `main` and CI is green.
-- [ ] `php artisan migrate:fresh --seed` works on all four laptops.
-- [ ] Each role logs in and sees only its own menu items. A storekeeper gets a 403 on `/ingredients`.
-- [ ] A chef can add an ingredient with a pack size. A duplicate name shows an error.
-- [ ] A storekeeper can record a new chicken price, and the old price stays in the history.
-- [ ] Recording chicken "per ml" shows an error instead of saving.
-- [ ] `php artisan test` passes (about 26 team tests plus Breeze's).
+**Sprint 1 is done when:** (checked on 2026-11-23; built by Member 4 alone, the team splits the work again from Sprint 2)
+- [x] All tickets are merged into `main` and CI is green.
+- [ ] `php artisan migrate:fresh --seed` works on all four laptops. (Works in CI on SQLite and MySQL; still to check on each laptop.)
+- [x] Each role logs in and sees only its own menu items. A storekeeper gets a 403 on `/ingredients`.
+- [x] A chef can add an ingredient with a pack size. A duplicate name shows an error.
+- [x] A storekeeper can record a new chicken price, and the old price stays in the history.
+- [x] Recording chicken "per ml" shows an error instead of saving.
+- [x] `php artisan test` passes (74 tests: 49 team tests plus Breeze's 25).
 
 ## Team workflow
 
