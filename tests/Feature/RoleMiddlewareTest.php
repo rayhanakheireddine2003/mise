@@ -45,4 +45,31 @@ class RoleMiddlewareTest extends TestCase
     {
         $this->get('/_test/kitchen-only')->assertRedirect(route('login'));
     }
+
+    // ----- The real Mise pages are locked by role -----
+
+    public function test_storekeeper_gets_403_on_kitchen_pages(): void
+    {
+        $storekeeper = User::factory()->create(['role' => 'storekeeper']);
+
+        foreach (['/ingredients', '/ingredients/create', '/storage-areas'] as $url) {
+            $this->actingAs($storekeeper)->get($url)->assertForbidden();
+        }
+    }
+
+    public function test_chef_gets_403_on_supplier_pages(): void
+    {
+        $this->actingAs(User::factory()->create(['role' => 'chef']))
+            ->get('/suppliers')
+            ->assertForbidden();
+    }
+
+    public function test_owner_can_open_every_page(): void
+    {
+        $owner = User::factory()->create(['role' => 'owner']);
+
+        foreach (['/ingredients', '/storage-areas', '/suppliers'] as $url) {
+            $this->actingAs($owner)->get($url)->assertOk();
+        }
+    }
 }
