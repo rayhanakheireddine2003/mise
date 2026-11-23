@@ -1,5 +1,9 @@
 # Runs all tests on every push and pull request.
-# A PR may only be merged when this is green.
+# A PR may only be merged when both jobs are green.
+#
+#  - "tests":       fast run on SQLite in memory (same as on your laptop).
+#  - "tests-mysql": the same tests on a real MySQL server, like the live site.
+#                   Catches things SQLite allows but MySQL refuses.
 name: tests
 
 on:
@@ -39,4 +43,67 @@ jobs:
           php artisan key:generate
 
       - name: Run tests
+        run: php artisan test
+
+  tests-mysql:
+    runs-on: ubuntu-latest
+
+    # A throwaway MySQL server that only lives during this job.
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_DATABASE: mise
+          MYSQL_ROOT_PASSWORD: secret
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -psecret"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+
+    # These override phpunit.xml, so the tests run on MySQL instead of SQLite.
+    env:
+      DB_CONNECTION: mysql
+      DB_HOST: 127.0.0.1
+      DB_PORT: 3306
+      DB_DATABASE: mise
+      DB_USERNAME: root
+      DB_PASSWORD: secret
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: mbstring, pdo_mysql, fileinfo, zip
+          coverage: none
+
+      - name: Install PHP packages
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Build front end (Tailwind / Vite)
+        run: npm ci && npm run build
+
+      - name: Prepare Laravel
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+
+      - name: Migrations run forward and backward on MySQL
+        run: |
+          php artisan migrate --force
+          php artisan migrate:rollback --force
+          php artisan migrate --force
+
+      - name: Run tests on MySQL
         run: php artisan test
