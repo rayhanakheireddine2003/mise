@@ -2,17 +2,45 @@
 
 namespace App\Models;
 
+use DomainException;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * One line of a recipe: either an ingredient OR a sub-recipe, never both.
- * The rule that enforces this (RecipeLine::saving) is added in MISE-10.
+ * This is enforced in booted() below, so it holds everywhere: forms,
+ * the seeder and tests (MISE-10).
  */
 #[Fillable(['recipe_id', 'ingredient_id', 'sub_recipe_id', 'qty', 'unit'])]
 class RecipeLine extends Model
 {
+    /**
+     * Runs automatically every time a line is created or updated.
+     * Throwing an exception stops the save, so a bad line never reaches the database.
+     */
+    protected static function booted(): void
+    {
+        static::saving(function (RecipeLine $line) {
+            $hasIngredient = ! empty($line->ingredient_id);
+            $hasSubRecipe = ! empty($line->sub_recipe_id);
+
+            // Exactly one of the two: not both, not neither.
+            if ($hasIngredient && $hasSubRecipe) {
+                throw new DomainException('A recipe line can use an ingredient or a sub-recipe, not both.');
+            }
+            if (! $hasIngredient && ! $hasSubRecipe) {
+                throw new DomainException('A recipe line needs an ingredient or a sub-recipe.');
+            }
+
+            // A recipe can't contain itself (A inside A).
+            // Longer loops (A inside B inside A) are checked in Sprint 2 with costing.
+            if ($hasSubRecipe && (int) $line->sub_recipe_id === (int) $line->recipe_id) {
+                throw new DomainException('A recipe cannot contain itself.');
+            }
+        });
+    }
+
     protected function casts(): array
     {
         return [
