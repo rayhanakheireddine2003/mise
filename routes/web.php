@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\StorageAreaController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -28,7 +29,10 @@ Route::middleware('auth')->group(function () {
     // ===== Member 1: roles and menu (MISE-2, MISE-3) =====
 
     // ===== Member 2: storage areas and ingredients (MISE-4..6) =====
-    // Wrap in: Route::middleware('role:owner,chef')->group(function () { ... });
+    // TODO after MISE-2 is merged: wrap this block in
+    //   Route::middleware('role:owner,chef')->group(function () { ... });
+    Route::resource('storage-areas', StorageAreaController::class)
+        ->only(['index', 'store', 'destroy']);
 
     // ===== Member 3: suppliers and prices (MISE-7..9) =====
     // Wrap in: Route::middleware('role:owner,storekeeper')->group(function () { ... });
