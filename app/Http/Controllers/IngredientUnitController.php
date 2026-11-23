@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Ingredient;
 use App\Models\IngredientUnit;
+use App\Services\UnitConverter;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
@@ -13,12 +14,6 @@ use Illuminate\Validation\Rule;
  */
 class IngredientUnitController extends Controller
 {
-    /**
-     * Names a pack size can't use, because they are standard units already.
-     * TODO after MISE-2: use array_keys(UnitConverter::STANDARD_UNITS) instead.
-     */
-    private const RESERVED_NAMES = ['g', 'kg', 'ml', 'l', 'piece'];
-
     public function store(Request $request, Ingredient $ingredient)
     {
         // The fields are called pack_name / pack_qty (not "name") so they don't
@@ -26,7 +21,8 @@ class IngredientUnitController extends Controller
         $request->validate([
             'pack_name' => [
                 'required', 'string', 'max:50',
-                Rule::notIn(self::RESERVED_NAMES),
+                // A pack can't be called g, kg, ml, l or piece: those are standard units.
+                Rule::notIn(array_keys(UnitConverter::STANDARD_UNITS)),
                 // The same ingredient can't have two pack sizes with the same name.
                 Rule::unique('ingredient_units', 'name')->where('ingredient_id', $ingredient->id),
             ],

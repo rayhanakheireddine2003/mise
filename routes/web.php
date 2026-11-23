@@ -25,27 +25,29 @@ Route::middleware('auth')->group(function () {
     |--------------------------------------------------------------------------
     | Mise routes: one block per team member.
     | Only add routes inside YOUR block, so our pull requests don't conflict.
-    | The "role" middleware is added by Member 1 in MISE-2.
+    | Each block is locked with the "role" middleware (MISE-2): anyone whose
+    | role is not listed gets a 403 page.
     |--------------------------------------------------------------------------
     */
 
     // ===== Member 1: roles and menu (MISE-2, MISE-3) =====
+    // (no pages: the menu list is in app/View/MenuLinks.php)
 
     // ===== Member 2: storage areas and ingredients (MISE-4..6) =====
-    // TODO after MISE-2 is merged: wrap this block in
-    //   Route::middleware('role:owner,chef')->group(function () { ... });
-    Route::resource('storage-areas', StorageAreaController::class)
-        ->only(['index', 'store', 'destroy']);
-    Route::resource('ingredients', IngredientController::class)->except(['show']);
-    Route::post('ingredients/{ingredient}/units', [IngredientUnitController::class, 'store'])
-        ->name('ingredients.units.store');
-    Route::delete('ingredient-units/{unit}', [IngredientUnitController::class, 'destroy'])
-        ->name('ingredient-units.destroy');
+    Route::middleware('role:owner,chef')->group(function () {
+        Route::resource('storage-areas', StorageAreaController::class)
+            ->only(['index', 'store', 'destroy']);
+        Route::resource('ingredients', IngredientController::class)->except(['show']);
+        Route::post('ingredients/{ingredient}/units', [IngredientUnitController::class, 'store'])
+            ->name('ingredients.units.store');
+        Route::delete('ingredient-units/{unit}', [IngredientUnitController::class, 'destroy'])
+            ->name('ingredient-units.destroy');
+    });
 
     // ===== Member 3: suppliers and prices (MISE-7..9) =====
-    // TODO after MISE-2 is merged: wrap this block in
-    //   Route::middleware('role:owner,storekeeper')->group(function () { ... });
-    Route::resource('suppliers', SupplierController::class)->except(['show']);
+    Route::middleware('role:owner,storekeeper')->group(function () {
+        Route::resource('suppliers', SupplierController::class)->except(['show']);
+    });
 
     // ===== Member 4: recipes (MISE-10..12) =====
     // Wrap in: Route::middleware('role:owner,chef')->group(function () { ... });
