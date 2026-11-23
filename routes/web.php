@@ -1,6 +1,10 @@
 <?php
 
+use App\Http\Controllers\IngredientController;
+use App\Http\Controllers\IngredientUnitController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\StorageAreaController;
+use App\Http\Controllers\SupplierController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -28,10 +32,20 @@ Route::middleware('auth')->group(function () {
     // ===== Member 1: roles and menu (MISE-2, MISE-3) =====
 
     // ===== Member 2: storage areas and ingredients (MISE-4..6) =====
-    // Wrap in: Route::middleware('role:owner,chef')->group(function () { ... });
+    // TODO after MISE-2 is merged: wrap this block in
+    //   Route::middleware('role:owner,chef')->group(function () { ... });
+    Route::resource('storage-areas', StorageAreaController::class)
+        ->only(['index', 'store', 'destroy']);
+    Route::resource('ingredients', IngredientController::class)->except(['show']);
+    Route::post('ingredients/{ingredient}/units', [IngredientUnitController::class, 'store'])
+        ->name('ingredients.units.store');
+    Route::delete('ingredient-units/{unit}', [IngredientUnitController::class, 'destroy'])
+        ->name('ingredient-units.destroy');
 
     // ===== Member 3: suppliers and prices (MISE-7..9) =====
-    // Wrap in: Route::middleware('role:owner,storekeeper')->group(function () { ... });
+    // TODO after MISE-2 is merged: wrap this block in
+    //   Route::middleware('role:owner,storekeeper')->group(function () { ... });
+    Route::resource('suppliers', SupplierController::class)->except(['show']);
 
     // ===== Member 4: recipes (MISE-10..12) =====
     // Wrap in: Route::middleware('role:owner,chef')->group(function () { ... });
