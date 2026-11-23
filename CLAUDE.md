@@ -33,11 +33,11 @@ Mise is a recipe-costing and stock-variance web app for independent restaurants.
 | Framework | Laravel 13, PHP 8.3+ |
 | Auth and layout | Laravel Breeze (Blade stack): login, register, profile, `<x-app-layout>` |
 | Front end | Blade templates + Tailwind (via Vite). No JS framework |
-| Database | SQLite for local dev (`database/database.sqlite`). Must stay MySQL-compatible: use migrations only, no raw SQLite-specific SQL |
-| Tests | PHPUnit, `php artisan test`, `RefreshDatabase`. Feature tests in `tests/Feature` |
-| CI | GitHub Actions `.github/workflows/tests.yml`: PHP 8.4, `composer install`, `npm ci && npm run build`, `php artisan test` |
+| Database | **MySQL** for local dev (XAMPP's MySQL, database `mise`, user `root`, no password) and for deployment. Tests run on SQLite in memory (`phpunit.xml`) for speed. Use migrations only, no raw database-specific SQL, so both keep working |
+| Tests | PHPUnit, `php artisan test`, `RefreshDatabase`. Feature tests in `tests/Feature`. Locally they use an in-memory SQLite database, so they never touch your MySQL data |
+| CI | GitHub Actions `.github/workflows/tests.yml`, PHP 8.4, two jobs that must both be green: `tests` (SQLite in memory) and `tests-mysql` (real MySQL 8.4 server, also checks migrations roll back) |
 | Money | USD, stored as decimals |
-| Local dev | Two terminals: `php artisan serve` and `npm run dev`. Avoid `composer run dev`, because `pail` doesn't work on Windows |
+| Local dev | Start MySQL in the XAMPP Control Panel, then two terminals: `php artisan serve` and `npm run dev`. Avoid `composer run dev`, because `pail` doesn't work on Windows. PHP comes from php.new (8.5), not XAMPP's PHP 8.2, which is too old |
 
 ## Architecture rules
 
@@ -149,6 +149,7 @@ Navigation (`layouts/navigation.blade.php`) shows each link only if `auth()->use
 - After every `git pull`, run `composer install`, `npm install` and `php artisan migrate`.
 - Each member adds routes only under their own comment block in `routes/web.php`, to avoid conflicts.
 - Never commit `.env`, `vendor/`, `node_modules/` or `*.sqlite`.
+- Before starting work, open the XAMPP Control Panel and start **MySQL** (Apache isn't needed).
 - Tools: GitHub (code + PRs), Jira (tickets and sprints), Notion (interview notes, decisions, retros).
 
 ## Instructions for Claude Code
